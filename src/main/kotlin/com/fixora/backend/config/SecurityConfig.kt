@@ -2,6 +2,7 @@ package com.fixora.backend.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -11,8 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
-import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import org.springframework.web.filter.CorsFilter
 
 @Configuration
 @EnableWebSecurity
@@ -25,8 +26,8 @@ class SecurityConfig(
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun corsConfigurationSource(): CorsConfigurationSource {
-        val configuration = CorsConfiguration().apply {
+    fun corsFilter(): CorsFilter {
+        val config = CorsConfiguration().apply {
             addAllowedOriginPattern("*")
             allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
@@ -34,18 +35,18 @@ class SecurityConfig(
             allowCredentials = true
         }
         val source = UrlBasedCorsConfigurationSource()
-        source.registerCorsConfiguration("/**", configuration)
-        return source
+        source.registerCorsConfiguration("/**", config)
+        return CorsFilter(source)
     }
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
-            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(
                         "/api/v1/staff/auth/**",
                         "/api/v1/customer/auth/**",
@@ -56,19 +57,13 @@ class SecurityConfig(
                         "/actuator/**"
                     ).permitAll()
                     .requestMatchers("/api/v1/staff/**").hasAnyAuthority(
-                        "ROLE_OWNER",
-                        "ROLE_MANAGER",
-                        "ROLE_RECEPTIONIST",
-                        "ROLE_TECHNICIAN",
-                        "ROLE_ACCOUNTANT"
+                        "ROLE_OWNER", "ROLE_MANAGER", "ROLE_RECEPTIONIST", "ROLE_TECHNICIAN", "ROLE_ACCOUNTANT"
                     )
                     .requestMatchers("/api/v1/customer/**").hasAuthority("ROLE_CUSTOMER")
                     .anyRequest().authenticated()
             }
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter::class.java
-            )
+            .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
