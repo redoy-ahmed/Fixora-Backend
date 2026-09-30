@@ -38,7 +38,19 @@ services:
       postgres:
         condition: service_healthy
 
-  # 3. pgAdmin 4 Database Web Management UI
+  # 3. Fixora Web Admin Portal (React + TypeScript + Tailwind + Nginx)
+  web:
+    build:
+      context: ../fixora-web
+      dockerfile: Dockerfile
+    container_name: fixora-web
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  # 4. pgAdmin 4 Database Web Management UI
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: fixora-pgadmin
