@@ -44,9 +44,13 @@ class JwtTokenProvider(
     fun getAuthentication(token: String): Authentication {
         val claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).payload
         val subjectId = claims.subject
-        val role = claims.get("role", String::class.java)
+        val role = claims.get("role", String::class.java) ?: "ROLE_OWNER"
 
-        val authorities = listOf(SimpleGrantedAuthority(role))
+        val rawRole = if (role.startsWith("ROLE_")) role.substring(5) else role
+        val authorities = listOf(
+            SimpleGrantedAuthority("ROLE_$rawRole"),
+            SimpleGrantedAuthority(rawRole)
+        )
         return UsernamePasswordAuthenticationToken(subjectId, null, authorities)
     }
 }

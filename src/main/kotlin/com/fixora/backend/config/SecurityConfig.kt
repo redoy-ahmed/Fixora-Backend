@@ -57,9 +57,10 @@ class SecurityConfig(
                         "/actuator/**"
                     ).permitAll()
                     .requestMatchers("/api/v1/staff/**").hasAnyAuthority(
-                        "ROLE_OWNER", "ROLE_MANAGER", "ROLE_RECEPTIONIST", "ROLE_TECHNICIAN", "ROLE_ACCOUNTANT"
+                        "ROLE_OWNER", "ROLE_MANAGER", "ROLE_RECEPTIONIST", "ROLE_TECHNICIAN", "ROLE_ACCOUNTANT",
+                        "OWNER", "MANAGER", "RECEPTIONIST", "TECHNICIAN", "ACCOUNTANT"
                     )
-                    .requestMatchers("/api/v1/customer/**").hasAuthority("ROLE_CUSTOMER")
+                    .requestMatchers("/api/v1/customer/**").hasAnyAuthority("ROLE_CUSTOMER", "CUSTOMER")
                     .anyRequest().authenticated()
             }
             .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter::class.java)
