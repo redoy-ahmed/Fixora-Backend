@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL 16 Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: fixora-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: fixora_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fixora_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Fixora Spring Boot REST API Backend Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fixora-backend
+    restart: always
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/fixora_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      PORT: 8080
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 3. pgAdmin 4 Database Web Management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: fixora-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fixora.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8081:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
