@@ -28,14 +28,71 @@ data class StaffDashboardKpiDto(
     val lowStockCount: Int
 )
 
-data class CreateCustomerRequest(val name: String, val phone: String, val email: String, val address: String, val notes: String? = null)
-data class CreateDeviceRequest(val customerId: UUID, val deviceType: String, val brand: String, val model: String, val serialNumber: String?, val imei: String?, val color: String?, val conditionNotes: String?)
-data class CreateRepairJobRequest(val customerId: UUID, val deviceId: UUID, val reportedProblem: String, val priority: String, val estimatedCostCents: Long)
+data class CreateCustomerRequest(
+    val name: String,
+    val phone: String,
+    val email: String,
+    val address: String,
+    val notes: String? = null
+)
+
+data class CreateDeviceRequest(
+    val customerId: UUID,
+    val deviceType: String,
+    val brand: String,
+    val model: String,
+    val serialNumber: String?,
+    val imei: String?,
+    val color: String?,
+    val conditionNotes: String?
+)
+
+data class CreateRepairJobRequest(
+    val customerId: UUID,
+    val deviceId: UUID,
+    val reportedProblem: String,
+    val priority: String,
+    val estimatedCostCents: Long
+)
+
 data class UpdateRepairStatusRequest(val newStatus: String)
-data class CreateDiagnosisEstimateRequest(val faultSummary: String, val partsCostCents: Long, val laborCostCents: Long, val discountCents: Long, val additionalChargesCents: Long)
-data class CreateInventoryPartRequest(val sku: String, val name: String, val brand: String, val category: String, val costPriceCents: Long, val sellingPriceCents: Long, val stockQuantity: Int, val minimumStock: Int, val supplierName: String?)
-data class CreateInvoiceRequest(val repairJobId: UUID, val partsTotalCents: Long, val laborTotalCents: Long, val discountCents: Long, val taxCents: Long, val amountPaidCents: Long)
-data class RecordPaymentRequest(val repairJobId: UUID, val invoiceId: UUID, val amountCents: Long, val paymentMethod: String, val transactionReference: String)
+data class CreateDiagnosisEstimateRequest(
+    val faultSummary: String,
+    val partsCostCents: Long,
+    val laborCostCents: Long,
+    val discountCents: Long,
+    val additionalChargesCents: Long
+)
+
+data class CreateInventoryPartRequest(
+    val sku: String,
+    val name: String,
+    val brand: String,
+    val category: String,
+    val costPriceCents: Long,
+    val sellingPriceCents: Long,
+    val stockQuantity: Int,
+    val minimumStock: Int,
+    val supplierName: String?
+)
+
+data class CreateInvoiceRequest(
+    val repairJobId: UUID,
+    val partsTotalCents: Long,
+    val laborTotalCents: Long,
+    val discountCents: Long,
+    val taxCents: Long,
+    val amountPaidCents: Long
+)
+
+data class RecordPaymentRequest(
+    val repairJobId: UUID,
+    val invoiceId: UUID,
+    val amountCents: Long,
+    val paymentMethod: String,
+    val transactionReference: String
+)
+
 data class IssueWarrantyRequest(val repairJobId: UUID, val durationDays: Int, val terms: String)
 
 // Customer DTOs (Masked & Privacy Preserving)

@@ -139,7 +139,8 @@ class RepairManagementService(
 @Service
 class HashVerificationService {
     fun computeCanonicalHash(repairJob: RepairJobEntity): String {
-        val canonicalJson = "{\"deviceId\":\"${repairJob.device.publicDeviceId}\",\"job\":\"${repairJob.jobNumber}\",\"status\":\"${repairJob.status}\"}"
+        val canonicalJson =
+            "{\"deviceId\":\"${repairJob.device.publicDeviceId}\",\"job\":\"${repairJob.jobNumber}\",\"status\":\"${repairJob.status}\"}"
         val digest = MessageDigest.getInstance("SHA-256")
         val hashBytes = digest.digest(canonicalJson.toByteArray(Charsets.UTF_8))
         return hashBytes.joinToString("") { "%02x".format(it) }
