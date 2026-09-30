@@ -25,6 +25,59 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffBranchController(private val branchRepository: BranchRepository) {
+
+    @GetMapping("/branches")
+    @Operation(summary = "List all shop branches")
+    fun getBranches(): ResponseEntity<List<BranchDto>> {
+        val dtos = branchRepository.findAll().map {
+            BranchDto(
+                id = it.id!!,
+                name = it.name,
+                address = it.address,
+                phone = it.phone,
+                email = it.email,
+                isMainBranch = it.isMainBranch
+            )
+        }
+        return ResponseEntity.ok(dtos)
+    }
+
+    @PostMapping("/branches")
+    @Operation(summary = "Create new shop branch")
+    fun createBranch(@RequestBody req: CreateBranchRequest): ResponseEntity<BranchDto> {
+        val isFirst = branchRepository.count() == 0L
+        val branch = BranchEntity(
+            name = req.name,
+            address = req.address,
+            phone = req.phone,
+            email = req.email,
+            isMainBranch = if (isFirst) true else req.isMainBranch
+        )
+        val saved = branchRepository.save(branch)
+        return ResponseEntity.ok(
+            BranchDto(
+                id = saved.id!!,
+                name = saved.name,
+                address = saved.address,
+                phone = saved.phone,
+                email = saved.email,
+                isMainBranch = saved.isMainBranch
+            )
+        )
+    }
+
+    @DeleteMapping("/branches/{id}")
+    @Operation(summary = "Delete branch by ID")
+    fun deleteBranch(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
+        branchRepository.deleteById(id)
+        return ResponseEntity.ok(mapOf("status" to "DELETED", "message" to "Branch removed successfully"))
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffDashboardController(private val repairManagementService: RepairManagementService) {
     @GetMapping("/dashboard/kpis")
     @Operation(summary = "Get Shop KPI Overview")

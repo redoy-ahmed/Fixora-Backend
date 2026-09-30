@@ -5,6 +5,20 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
+@Table(name = "branches")
+class BranchEntity(
+    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    var id: UUID? = null,
+    @Column(nullable = false, unique = true) var name: String,
+    @Column(nullable = false) var address: String,
+    @Column(nullable = false) var phone: String,
+    @Column(nullable = false) var email: String,
+    @Column(name = "is_main_branch", nullable = false) var isMainBranch: Boolean = false,
+    @Column(name = "created_at", nullable = false) var createdAt: OffsetDateTime = OffsetDateTime.now(),
+    @Column(name = "updated_at", nullable = false) var updatedAt: OffsetDateTime = OffsetDateTime.now()
+)
+
+@Entity
 @Table(name = "staff_users")
 class StaffUserEntity(
     @Id @GeneratedValue(strategy = GenerationType.AUTO)

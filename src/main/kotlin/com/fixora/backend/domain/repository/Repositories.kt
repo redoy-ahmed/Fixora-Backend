@@ -9,6 +9,11 @@ import java.util.Optional
 import java.util.UUID
 
 @Repository
+interface BranchRepository : JpaRepository<BranchEntity, UUID> {
+    fun findByName(name: String): Optional<BranchEntity>
+}
+
+@Repository
 interface StaffUserRepository : JpaRepository<StaffUserEntity, UUID> {
     fun findByEmail(email: String): Optional<StaffUserEntity>
 }

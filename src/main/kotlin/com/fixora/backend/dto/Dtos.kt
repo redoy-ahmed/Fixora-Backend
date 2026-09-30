@@ -16,6 +16,24 @@ data class LoginRequest(
 data class RegisterCustomerRequest(val fullName: String, val phone: String, val email: String, val password: String)
 data class AuthTokenResponse(val token: String, val userId: String, val displayName: String, val role: String)
 
+// Branch DTOs
+data class CreateBranchRequest(
+    val name: String,
+    val address: String,
+    val phone: String,
+    val email: String,
+    val isMainBranch: Boolean = false
+)
+
+data class BranchDto(
+    val id: UUID,
+    val name: String,
+    val address: String,
+    val phone: String,
+    val email: String,
+    val isMainBranch: Boolean
+)
+
 // Staff DTOs
 data class StaffDashboardKpiDto(
     val todaysJobsCount: Int,
