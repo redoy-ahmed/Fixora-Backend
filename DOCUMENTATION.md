@@ -2,14 +2,15 @@
 
 ## Table of Contents
 1. [Introduction](#1-introduction)
-2. [Security & Authentication Model](#2-security--authentication-model)
-3. [Database Schema (12 Tables)](#3-database-schema-12-tables)
-4. [API Endpoints Reference](#4-api-endpoints-reference)
+2. [Service & Management URLs](#2-service--management-urls)
+3. [Security & Authentication Model](#3-security--authentication-model)
+4. [Database Schema (12 Tables)](#4-database-schema-12-tables)
+5. [API Endpoints Reference](#5-api-endpoints-reference)
    - [Staff Operations (`/api/v1/staff/*`)](#staff-operations-apiv1staff)
    - [Customer Operations (`/api/v1/customer/*`)](#customer-operations-apiv1customer)
    - [Public Verification (`/api/v1/public/*`)](#public-verification-apiv1public)
-5. [SHA-256 Canonical Hashing Engine](#5-sha-256-canonical-hashing-engine)
-6. [Docker & Environment Configuration](#6-docker--environment-configuration)
+6. [SHA-256 Canonical Hashing Engine](#6-sha-256-canonical-hashing-engine)
+7. [Docker & Environment Configuration](#7-docker--environment-configuration)
 
 ---
 
@@ -19,7 +20,24 @@
 
 ---
 
-## 2. Security & Authentication Model
+## 2. Service & Management URLs
+
+### Running via Docker Compose (`run-docker.bat` / `docker compose up -d`)
+- **Interactive Swagger API UI**: 👉 **`http://localhost:8082/swagger-ui.html`**
+- **OpenAPI 3.0 JSON Spec**: 👉 **`http://localhost:8082/api-docs`**
+- **Actuator System Health Check**: 👉 **`http://localhost:8082/actuator/health`**
+- **Actuator Metrics Endpoint**: 👉 **`http://localhost:8082/actuator/metrics`**
+- **pgAdmin 4 Web Console**: 👉 **`http://localhost:8081`** (*Email: `admin@fixora.com` | Password: `admin`*)
+- **PostgreSQL Database**: `localhost:5432` (*Database: `fixora_db` | User: `postgres` | Password: `postgres`*)
+
+### Running via Direct Gradle (`.\gradlew.bat bootRun`)
+- **Interactive Swagger API UI**: 👉 **`http://localhost:8080/swagger-ui.html`**
+- **OpenAPI 3.0 JSON Spec**: 👉 **`http://localhost:8080/api-docs`**
+- **Actuator System Health Check**: 👉 **`http://localhost:8080/actuator/health`**
+
+---
+
+## 3. Security & Authentication Model
 
 Fixora Backend enforces **Stateless JWT Authentication** with strict dual-portal request matcher rules in `SecurityConfig.kt`:
 
@@ -28,7 +46,7 @@ Incoming Request -> JwtAuthenticationFilter -> JwtTokenProvider -> SecurityConte
 ```
 
 ### Security Matchers Rules:
-- `/api/v1/staff/auth/**`, `/api/v1/customer/auth/**`, `/api/v1/public/**`, `/swagger-ui.html` $\rightarrow$ **Public Access**
+- `/api/v1/staff/auth/**`, `/api/v1/customer/auth/**`, `/api/v1/public/**`, `/swagger-ui.html`, `/actuator/**` $\rightarrow$ **Public Access**
 - `/api/v1/staff/**` $\rightarrow$ Requires **Staff Roles** (`ROLE_OWNER`, `ROLE_MANAGER`, `ROLE_RECEPTIONIST`, `ROLE_TECHNICIAN`, `ROLE_ACCOUNTANT`)
 - `/api/v1/customer/**` $\rightarrow$ Requires **`ROLE_CUSTOMER`**
 
@@ -37,7 +55,7 @@ All customer REST endpoints extract the customer's UUID directly from `SecurityC
 
 ---
 
-## 3. Database Schema (12 Tables)
+## 4. Database Schema (12 Tables)
 
 The PostgreSQL schema is managed via Flyway migration script `V1__init_schema.sql`.
 
@@ -74,7 +92,7 @@ All currency values (e.g. `estimated_cost_cents`, `parts_cost_cents`, `grand_tot
 
 ---
 
-## 4. API Endpoints Reference
+## 5. API Endpoints Reference
 
 ### Staff Operations (`/api/v1/staff/*`)
 - `POST /api/v1/staff/auth/login` — Staff User Login
@@ -97,7 +115,7 @@ All currency values (e.g. `estimated_cost_cents`, `parts_cost_cents`, `grand_tot
 
 ---
 
-## 5. SHA-256 Canonical Hashing Engine
+## 6. SHA-256 Canonical Hashing Engine
 
 When a repair job reaches `DELIVERED` status, `HashVerificationService` computes a deterministic SHA-256 hash of the canonical repair event payload:
 
@@ -110,11 +128,12 @@ The computed hash is stored in `repair_jobs.record_hash` and verified on public 
 
 ---
 
-## 6. Docker & Environment Configuration
+## 7. Docker & Environment Configuration
 
 ### Management URLs (Port 8082):
 - **Spring Boot REST API**: `http://localhost:8082`
 - **Swagger Interactive API Docs**: `http://localhost:8082/swagger-ui.html`
+- **Actuator Health Check**: `http://localhost:8082/actuator/health`
 - **pgAdmin DB UI**: `http://localhost:8081` (`admin@fixora.com` / `admin`)
 - **PostgreSQL Database**: `localhost:5432` (`fixora_db` / `postgres` / `postgres`)
 
@@ -122,9 +141,9 @@ The computed hash is stored in `repair_jobs.record_hash` and verified on public 
 ```yaml
 spring:
   datasource:
-    url: ${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/fixora_db}
-    username: ${JDBC_DATABASE_USERNAME:postgres}
-    password: ${JDBC_DATABASE_PASSWORD:postgres}
+    url: ${SPRING_DATASOURCE_URL:${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5432/fixora_db}}
+    username: ${SPRING_DATASOURCE_USERNAME:${JDBC_DATABASE_USERNAME:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${JDBC_DATABASE_PASSWORD:postgres}}
 jwt:
   secret: ${JWT_SECRET:...}
   expiration-ms: 86400000 # 24 Hours
