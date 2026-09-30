@@ -18,7 +18,7 @@ class StaffAuthService(
     private val jwtTokenProvider: JwtTokenProvider
 ) {
     fun login(request: LoginRequest): AuthTokenResponse {
-        val user = staffUserRepository.findByEmail(request.username)
+        val user = staffUserRepository.findByEmail(request.identifier)
             .orElseThrow { IllegalArgumentException("Invalid credentials") }
 
         if (!passwordEncoder.matches(request.password, user.passwordHash)) {
@@ -38,7 +38,7 @@ class CustomerAuthService(
     private val jwtTokenProvider: JwtTokenProvider
 ) {
     fun login(request: LoginRequest): AuthTokenResponse {
-        val credential = customerCredentialRepository.findByPhoneOrEmail(request.username)
+        val credential = customerCredentialRepository.findByPhoneOrEmail(request.identifier)
             .orElseThrow { IllegalArgumentException("Invalid credentials") }
 
         if (!passwordEncoder.matches(request.password, credential.passwordHash)) {

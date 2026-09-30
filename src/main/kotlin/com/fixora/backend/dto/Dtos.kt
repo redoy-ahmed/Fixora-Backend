@@ -4,7 +4,15 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 // Common Auth DTOs
-data class LoginRequest(val username: String, val password: String)
+data class LoginRequest(
+    val username: String? = null,
+    val email: String? = null,
+    val password: String
+) {
+    val identifier: String
+        get() = username ?: email ?: throw IllegalArgumentException("Username or email must be provided")
+}
+
 data class RegisterCustomerRequest(val fullName: String, val phone: String, val email: String, val password: String)
 data class AuthTokenResponse(val token: String, val userId: String, val displayName: String, val role: String)
 
