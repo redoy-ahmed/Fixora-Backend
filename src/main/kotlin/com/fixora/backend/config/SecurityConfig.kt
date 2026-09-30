@@ -10,6 +10,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -22,8 +25,23 @@ class SecurityConfig(
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration().apply {
+            addAllowedOriginPattern("*")
+            allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+            allowedHeaders = listOf("*")
+            exposedHeaders = listOf("Authorization", "Content-Type")
+            allowCredentials = true
+        }
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
+    }
+
+    @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .csrf { it.disable() }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
@@ -38,12 +56,19 @@ class SecurityConfig(
                         "/actuator/**"
                     ).permitAll()
                     .requestMatchers("/api/v1/staff/**").hasAnyAuthority(
-                        "ROLE_OWNER", "ROLE_MANAGER", "ROLE_RECEPTIONIST", "ROLE_TECHNICIAN", "ROLE_ACCOUNTANT"
+                        "ROLE_OWNER",
+                        "ROLE_MANAGER",
+                        "ROLE_RECEPTIONIST",
+                        "ROLE_TECHNICIAN",
+                        "ROLE_ACCOUNTANT"
                     )
                     .requestMatchers("/api/v1/customer/**").hasAuthority("ROLE_CUSTOMER")
                     .anyRequest().authenticated()
             }
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter::class.java
+            )
 
         return http.build()
     }
