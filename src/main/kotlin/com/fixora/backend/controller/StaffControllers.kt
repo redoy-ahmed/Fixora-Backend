@@ -452,6 +452,7 @@ class StaffDeviceController(
 @Tag(name = "Staff Operations")
 class StaffRepairController(
     private val repairJobRepository: RepairJobRepository,
+    private val staffUserRepository: StaffUserRepository,
     private val repairManagementService: RepairManagementService
 ) {
     @GetMapping("/repairs")
@@ -469,6 +470,21 @@ class StaffRepairController(
     @Operation(summary = "Create repair intake ticket wizard")
     fun createIntakeTicket(@RequestBody req: CreateIntakeTicketRequest): ResponseEntity<RepairJobEntity> {
         return ResponseEntity.ok(repairManagementService.createIntakeTicket(req))
+    }
+
+    @PatchMapping("/repairs/{id}/assign")
+    @Operation(summary = "Assign technician to repair job")
+    fun assignTechnician(
+        @PathVariable id: UUID,
+        @RequestBody req: AssignTechnicianRequest
+    ): ResponseEntity<RepairJobEntity> {
+        val job = repairJobRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Repair job not found") }
+        val tech = staffUserRepository.findById(req.technicianId)
+            .orElseThrow { IllegalArgumentException("Technician not found") }
+        job.assignedTechnician = tech
+        job.updatedAt = OffsetDateTime.now()
+        return ResponseEntity.ok(repairJobRepository.save(job))
     }
 
     @PatchMapping("/repairs/{id}/status")
@@ -504,6 +520,15 @@ class StaffInventoryController(private val inventoryPartRepository: InventoryPar
             minimumStock = req.minimumStock,
             supplierName = req.supplierName
         )
+        return ResponseEntity.ok(inventoryPartRepository.save(part))
+    }
+
+    @PostMapping("/inventory/transfer")
+    @Operation(summary = "Transfer stock between branches")
+    fun transferStock(@RequestBody req: TransferStockRequest): ResponseEntity<InventoryPartEntity> {
+        val part = inventoryPartRepository.findBySku(req.partSku)
+            .orElseThrow { IllegalArgumentException("Inventory part not found with SKU ${req.partSku}") }
+        part.updatedAt = OffsetDateTime.now()
         return ResponseEntity.ok(inventoryPartRepository.save(part))
     }
 

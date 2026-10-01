@@ -139,6 +139,8 @@ data class CreateIntakeTicketRequest(
     val estimatedCostCents: Long = 0L
 )
 
+data class AssignTechnicianRequest(val technicianId: UUID)
+
 data class UpdateRepairStatusRequest(val newStatus: String)
 data class CreateDiagnosisEstimateRequest(
     val faultSummary: String,
@@ -170,6 +172,13 @@ data class UpdateInventoryPartRequest(
     val stockQuantity: Int,
     val minimumStock: Int,
     val supplierName: String?
+)
+
+data class TransferStockRequest(
+    val partSku: String,
+    val sourceBranchName: String,
+    val targetBranchName: String,
+    val quantity: Int
 )
 
 data class CreateInvoiceRequest(
