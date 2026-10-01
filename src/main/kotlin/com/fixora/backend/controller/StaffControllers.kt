@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @RestController
@@ -45,6 +46,19 @@ class StaffUserController(
             role = StaffRole.valueOf(req.role),
             branchName = req.branchName ?: "Main Branch"
         )
+        return ResponseEntity.ok(staffUserRepository.save(user))
+    }
+
+    @PatchMapping("/users/{id}/role")
+    @Operation(summary = "Update staff user role")
+    fun updateStaffRole(
+        @PathVariable id: UUID,
+        @RequestBody req: UpdateStaffRoleRequest
+    ): ResponseEntity<StaffUserEntity> {
+        val user = staffUserRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Staff user not found") }
+        user.role = StaffRole.valueOf(req.role)
+        user.updatedAt = OffsetDateTime.now()
         return ResponseEntity.ok(staffUserRepository.save(user))
     }
 

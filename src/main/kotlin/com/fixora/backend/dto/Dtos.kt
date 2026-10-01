@@ -43,6 +43,8 @@ data class CreateStaffUserRequest(
     val branchName: String? = "Main Branch"
 )
 
+data class UpdateStaffRoleRequest(val role: String)
+
 data class StaffDashboardKpiDto(
     val todaysJobsCount: Int,
     val pendingJobsCount: Int,
