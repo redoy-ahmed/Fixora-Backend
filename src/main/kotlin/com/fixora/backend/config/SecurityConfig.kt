@@ -48,6 +48,7 @@ class SecurityConfig(
                 auth
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers(
+                        "/",
                         "/api/v1/staff/auth/**",
                         "/api/v1/customer/auth/**",
                         "/api/v1/public/**",
