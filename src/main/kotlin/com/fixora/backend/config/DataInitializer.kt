@@ -14,7 +14,8 @@ class DataInitializer(
 ) : CommandLineRunner {
 
     override fun run(vararg args: String?) {
-        if (staffUserRepository.count() == 0L) {
+        val admin = staffUserRepository.findByEmail("karim@techcare.com").orElse(null)
+        if (admin == null) {
             staffUserRepository.save(
                 StaffUserEntity(
                     name = "Admin Owner",
@@ -24,6 +25,9 @@ class DataInitializer(
                     branchName = "Main Branch"
                 )
             )
+        } else {
+            admin.passwordHash = passwordEncoder.encode("password123")
+            staffUserRepository.save(admin)
         }
     }
 }
