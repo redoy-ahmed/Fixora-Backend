@@ -47,6 +47,13 @@ class StaffUserController(
         )
         return ResponseEntity.ok(staffUserRepository.save(user))
     }
+
+    @DeleteMapping("/users/{id}")
+    @Operation(summary = "Delete staff user account")
+    fun deleteStaffUser(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
+        staffUserRepository.deleteById(id)
+        return ResponseEntity.ok(mapOf("status" to "DELETED", "message" to "Staff account deleted successfully"))
+    }
 }
 
 @RestController
@@ -98,12 +105,7 @@ class StaffBranchController(private val branchRepository: BranchRepository) {
     @Operation(summary = "Delete branch by ID")
     fun deleteBranch(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
         branchRepository.deleteById(id)
-        return ResponseEntity.ok(
-            mapOf(
-                "status" to "DELETED",
-                "message" to "Branch removed successfully"
-            )
-        )
+        return ResponseEntity.ok(mapOf("status" to "DELETED", "message" to "Branch removed successfully"))
     }
 }
 
