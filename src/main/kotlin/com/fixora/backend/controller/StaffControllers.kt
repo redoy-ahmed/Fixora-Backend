@@ -49,6 +49,27 @@ class StaffUserController(
         return ResponseEntity.ok(staffUserRepository.save(user))
     }
 
+    @PutMapping("/users/{id}")
+    @Operation(summary = "Update full staff user account")
+    fun updateStaffUser(
+        @PathVariable id: UUID,
+        @RequestBody req: UpdateStaffUserRequest
+    ): ResponseEntity<StaffUserEntity> {
+        val user = staffUserRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Staff user not found") }
+        user.name = req.name
+        user.email = req.email
+        user.role = StaffRole.valueOf(req.role)
+        if (!req.branchName.isNullOrBlank()) {
+            user.branchName = req.branchName
+        }
+        if (!req.password.isNullOrBlank()) {
+            user.passwordHash = passwordEncoder.encode(req.password)
+        }
+        user.updatedAt = OffsetDateTime.now()
+        return ResponseEntity.ok(staffUserRepository.save(user))
+    }
+
     @PatchMapping("/users/{id}/role")
     @Operation(summary = "Update staff user role")
     fun updateStaffRole(

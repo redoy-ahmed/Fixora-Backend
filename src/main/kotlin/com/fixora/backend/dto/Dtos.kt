@@ -43,6 +43,14 @@ data class CreateStaffUserRequest(
     val branchName: String? = "Main Branch"
 )
 
+data class UpdateStaffUserRequest(
+    val name: String,
+    val email: String,
+    val role: String,
+    val branchName: String? = "Main Branch",
+    val password: String? = null
+)
+
 data class UpdateStaffRoleRequest(val role: String)
 
 data class StaffDashboardKpiDto(
