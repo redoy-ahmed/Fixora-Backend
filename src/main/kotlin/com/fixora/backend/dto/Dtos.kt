@@ -35,6 +35,14 @@ data class BranchDto(
 )
 
 // Staff DTOs
+data class CreateStaffUserRequest(
+    val name: String,
+    val email: String,
+    val role: String,
+    val password: String? = "password123",
+    val branchName: String? = "Main Branch"
+)
+
 data class StaffDashboardKpiDto(
     val todaysJobsCount: Int,
     val pendingJobsCount: Int,

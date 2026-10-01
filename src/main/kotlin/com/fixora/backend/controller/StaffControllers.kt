@@ -8,6 +8,7 @@ import com.fixora.backend.service.StaffAuthService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
@@ -19,6 +20,32 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
     @Operation(summary = "Staff User Login")
     fun login(@RequestBody request: LoginRequest): ResponseEntity<AuthTokenResponse> {
         return ResponseEntity.ok(staffAuthService.login(request))
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
+class StaffUserController(
+    private val staffUserRepository: StaffUserRepository,
+    private val passwordEncoder: PasswordEncoder
+) {
+    @GetMapping("/users")
+    @Operation(summary = "List all staff users")
+    fun getStaffUsers(): ResponseEntity<List<StaffUserEntity>> =
+        ResponseEntity.ok(staffUserRepository.findAll())
+
+    @PostMapping("/users")
+    @Operation(summary = "Create staff user account")
+    fun createStaffUser(@RequestBody req: CreateStaffUserRequest): ResponseEntity<StaffUserEntity> {
+        val user = StaffUserEntity(
+            name = req.name,
+            email = req.email,
+            passwordHash = passwordEncoder.encode(req.password ?: "password123"),
+            role = StaffRole.valueOf(req.role),
+            branchName = req.branchName ?: "Main Branch"
+        )
+        return ResponseEntity.ok(staffUserRepository.save(user))
     }
 }
 
@@ -71,7 +98,12 @@ class StaffBranchController(private val branchRepository: BranchRepository) {
     @Operation(summary = "Delete branch by ID")
     fun deleteBranch(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
         branchRepository.deleteById(id)
-        return ResponseEntity.ok(mapOf("status" to "DELETED", "message" to "Branch removed successfully"))
+        return ResponseEntity.ok(
+            mapOf(
+                "status" to "DELETED",
+                "message" to "Branch removed successfully"
+            )
+        )
     }
 }
 
