@@ -144,6 +144,18 @@ data class CreateInventoryPartRequest(
     val supplierName: String?
 )
 
+data class UpdateInventoryPartRequest(
+    val sku: String,
+    val name: String,
+    val brand: String,
+    val category: String,
+    val costPriceCents: Long,
+    val sellingPriceCents: Long,
+    val stockQuantity: Int,
+    val minimumStock: Int,
+    val supplierName: String?
+)
+
 data class CreateInvoiceRequest(
     val repairJobId: UUID,
     val partsTotalCents: Long,

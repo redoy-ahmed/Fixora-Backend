@@ -386,4 +386,32 @@ class StaffInventoryController(private val inventoryPartRepository: InventoryPar
         )
         return ResponseEntity.ok(inventoryPartRepository.save(part))
     }
+
+    @PutMapping("/inventory/{id}")
+    @Operation(summary = "Update spare part in inventory")
+    fun updatePart(
+        @PathVariable id: UUID,
+        @RequestBody req: UpdateInventoryPartRequest
+    ): ResponseEntity<InventoryPartEntity> {
+        val part = inventoryPartRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Inventory item not found") }
+        part.sku = req.sku
+        part.name = req.name
+        part.brand = req.brand
+        part.category = req.category
+        part.costPriceCents = req.costPriceCents
+        part.sellingPriceCents = req.sellingPriceCents
+        part.stockQuantity = req.stockQuantity
+        part.minimumStock = req.minimumStock
+        part.supplierName = req.supplierName
+        part.updatedAt = OffsetDateTime.now()
+        return ResponseEntity.ok(inventoryPartRepository.save(part))
+    }
+
+    @DeleteMapping("/inventory/{id}")
+    @Operation(summary = "Delete spare part from inventory")
+    fun deletePart(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
+        inventoryPartRepository.deleteById(id)
+        return ResponseEntity.ok(mapOf("status" to "DELETED", "message" to "Inventory item deleted successfully"))
+    }
 }
