@@ -62,4 +62,35 @@ class PublicVerificationController(
             )
         )
     }
+
+    @GetMapping("/passport/{publicDeviceId}")
+    @Operation(summary = "Public digital device passport lookup")
+    fun getFullDevicePassport(@PathVariable publicDeviceId: String): ResponseEntity<Map<String, Any>> {
+        val device = deviceRepository.findByPublicDeviceId(publicDeviceId)
+            .orElseThrow { IllegalArgumentException("Device not found with ID $publicDeviceId") }
+
+        val repairHistory = repairJobRepository.findAll().filter { it.device.id == device.id }.map { job ->
+            mapOf(
+                "jobNumber" to job.jobNumber,
+                "status" to job.status.name,
+                "reportedProblem" to job.reportedProblem,
+                "completedAt" to (job.completedAt?.toString() ?: "In Progress"),
+                "recordHash" to (job.recordHash ?: "Pending")
+            )
+        }
+
+        return ResponseEntity.ok(
+            mapOf(
+                "publicDeviceId" to device.publicDeviceId,
+                "brand" to device.brand,
+                "model" to device.model,
+                "deviceType" to device.deviceType.name,
+                "color" to (device.color ?: "Standard"),
+                "maskedSerialNumber" to hashVerificationService.maskIdentifier(device.serialNumber),
+                "customerName" to device.customer.name,
+                "serviceHistory" to repairHistory,
+                "isVerified" to true
+            )
+        )
+    }
 }
