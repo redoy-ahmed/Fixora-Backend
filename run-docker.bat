@@ -19,4 +19,3 @@ echo  4. Actuator Health:       http://localhost:8082/actuator/health
 echo  5. pgAdmin Web Console:   http://localhost:8081 (admin@fixora.com / admin)
 echo  6. PostgreSQL DB:         localhost:5432 (fixora_db / postgres / postgres)
 echo =======================================================================
-pause
