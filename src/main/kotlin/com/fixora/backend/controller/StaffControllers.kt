@@ -351,6 +351,12 @@ class StaffRepairController(
         return ResponseEntity.ok(repairManagementService.createRepairJob(req))
     }
 
+    @PostMapping("/repairs/intake")
+    @Operation(summary = "Create repair intake ticket wizard")
+    fun createIntakeTicket(@RequestBody req: CreateIntakeTicketRequest): ResponseEntity<RepairJobEntity> {
+        return ResponseEntity.ok(repairManagementService.createIntakeTicket(req))
+    }
+
     @PatchMapping("/repairs/{id}/status")
     @Operation(summary = "Update repair lifecycle status")
     fun updateStatus(

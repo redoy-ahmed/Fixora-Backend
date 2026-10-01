@@ -123,6 +123,22 @@ data class CreateRepairJobRequest(
     val estimatedCostCents: Long
 )
 
+data class CreateIntakeTicketRequest(
+    val customerId: UUID? = null,
+    val customerName: String? = null,
+    val customerPhone: String? = null,
+    val customerEmail: String? = null,
+    val customerAddress: String? = null,
+    val deviceId: UUID? = null,
+    val deviceType: String? = "MOBILE",
+    val deviceBrand: String? = "Apple",
+    val deviceModel: String? = "iPhone",
+    val deviceSerialNumber: String? = null,
+    val reportedProblem: String,
+    val priority: String = "NORMAL",
+    val estimatedCostCents: Long = 0L
+)
+
 data class UpdateRepairStatusRequest(val newStatus: String)
 data class CreateDiagnosisEstimateRequest(
     val faultSummary: String,

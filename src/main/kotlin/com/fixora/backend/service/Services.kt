@@ -113,9 +113,55 @@ class RepairManagementService(
             customer = customer,
             device = device,
             reportedProblem = request.reportedProblem,
-            priority = RepairPriority.valueOf(request.priority),
+            priority = try { RepairPriority.valueOf(request.priority) } catch (e: Exception) { RepairPriority.NORMAL },
             status = RepairStatus.RECEIVED,
             estimatedCostCents = request.estimatedCostCents
+        )
+        return repairJobRepository.save(repairJob)
+    }
+
+    @Transactional
+    fun createIntakeTicket(req: CreateIntakeTicketRequest): RepairJobEntity {
+        val customer = if (req.customerId != null) {
+            customerRepository.findById(req.customerId).orElseThrow { IllegalArgumentException("Customer not found") }
+        } else {
+            val phone = req.customerPhone.takeIf { !it.isNullOrBlank() } ?: ("+8801700" + System.currentTimeMillis().toString().takeLast(6))
+            val email = req.customerEmail.takeIf { !it.isNullOrBlank() } ?: ("cust" + System.currentTimeMillis().toString().takeLast(6) + "@fixora.com")
+            customerRepository.save(
+                CustomerEntity(
+                    name = req.customerName ?: "Walk-in Customer",
+                    phone = phone,
+                    email = email,
+                    address = req.customerAddress ?: "Dhaka"
+                )
+            )
+        }
+
+        val device = if (req.deviceId != null) {
+            deviceRepository.findById(req.deviceId).orElseThrow { IllegalArgumentException("Device not found") }
+        } else {
+            val publicId = "DP-" + System.currentTimeMillis().toString().takeLast(6).uppercase()
+            deviceRepository.save(
+                DeviceEntity(
+                    publicDeviceId = publicId,
+                    customer = customer,
+                    deviceType = try { DeviceType.valueOf(req.deviceType ?: "MOBILE") } catch (e: Exception) { DeviceType.MOBILE },
+                    brand = req.deviceBrand ?: "Apple",
+                    model = req.deviceModel ?: "iPhone",
+                    serialNumber = req.deviceSerialNumber ?: ("SN" + System.currentTimeMillis().toString().takeLast(6))
+                )
+            )
+        }
+
+        val jobNumber = "RS-2026-" + System.currentTimeMillis().toString().takeLast(5)
+        val repairJob = RepairJobEntity(
+            jobNumber = jobNumber,
+            customer = customer,
+            device = device,
+            reportedProblem = req.reportedProblem,
+            priority = try { RepairPriority.valueOf(req.priority) } catch (e: Exception) { RepairPriority.NORMAL },
+            status = RepairStatus.RECEIVED,
+            estimatedCostCents = req.estimatedCostCents
         )
         return repairJobRepository.save(repairJob)
     }
@@ -139,8 +185,7 @@ class RepairManagementService(
 @Service
 class HashVerificationService {
     fun computeCanonicalHash(repairJob: RepairJobEntity): String {
-        val canonicalJson =
-            "{\"deviceId\":\"${repairJob.device.publicDeviceId}\",\"job\":\"${repairJob.jobNumber}\",\"status\":\"${repairJob.status}\"}"
+        val canonicalJson = "{\"deviceId\":\"${repairJob.device.publicDeviceId}\",\"job\":\"${repairJob.jobNumber}\",\"status\":\"${repairJob.status}\"}"
         val digest = MessageDigest.getInstance("SHA-256")
         val hashBytes = digest.digest(canonicalJson.toByteArray(Charsets.UTF_8))
         return hashBytes.joinToString("") { "%02x".format(it) }
