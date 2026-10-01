@@ -27,6 +27,56 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffWarrantyController(
+    private val warrantyRepository: WarrantyRepository,
+    private val warrantyClaimRepository: WarrantyClaimRepository,
+    private val repairJobRepository: RepairJobRepository
+) {
+    @GetMapping("/warranties")
+    @Operation(summary = "List all active warranties")
+    fun getWarranties(): ResponseEntity<List<WarrantyEntity>> =
+        ResponseEntity.ok(warrantyRepository.findAll())
+
+    @PostMapping("/warranties")
+    @Operation(summary = "Issue warranty for completed repair job")
+    fun issueWarranty(@RequestBody req: IssueWarrantyRequest): ResponseEntity<WarrantyEntity> {
+        val repairJob = repairJobRepository.findById(req.repairJobId)
+            .orElseThrow { IllegalArgumentException("Repair job not found") }
+
+        val now = OffsetDateTime.now()
+        val warranty = WarrantyEntity(
+            repairJob = repairJob,
+            durationDays = req.durationDays,
+            terms = req.terms,
+            status = WarrantyStatus.ACTIVE,
+            startsAt = now,
+            endsAt = now.plusDays(req.durationDays.toLong())
+        )
+        return ResponseEntity.ok(warrantyRepository.save(warranty))
+    }
+
+    @GetMapping("/warranties/claims")
+    @Operation(summary = "List all customer warranty claims")
+    fun getClaims(): ResponseEntity<List<WarrantyClaimEntity>> =
+        ResponseEntity.ok(warrantyClaimRepository.findAll())
+
+    @PatchMapping("/warranties/claims/{id}/status")
+    @Operation(summary = "Resolve warranty claim status")
+    fun updateClaimStatus(
+        @PathVariable id: UUID,
+        @RequestBody req: UpdateClaimStatusRequest
+    ): ResponseEntity<WarrantyClaimEntity> {
+        val claim = warrantyClaimRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Warranty claim not found") }
+        claim.status = ClaimStatus.valueOf(req.newStatus)
+        claim.updatedAt = OffsetDateTime.now()
+        return ResponseEntity.ok(warrantyClaimRepository.save(claim))
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffInvoiceController(
     private val invoiceRepository: InvoiceRepository,
     private val repairJobRepository: RepairJobRepository

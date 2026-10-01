@@ -190,6 +190,7 @@ data class RecordPaymentRequest(
 )
 
 data class IssueWarrantyRequest(val repairJobId: UUID, val durationDays: Int, val terms: String)
+data class UpdateClaimStatusRequest(val newStatus: String)
 
 // Customer DTOs (Masked & Privacy Preserving)
 data class CustomerRepairDto(
