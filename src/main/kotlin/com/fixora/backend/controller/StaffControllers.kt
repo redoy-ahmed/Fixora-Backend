@@ -27,6 +27,46 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffInvoiceController(
+    private val invoiceRepository: InvoiceRepository,
+    private val repairJobRepository: RepairJobRepository
+) {
+    @GetMapping("/invoices")
+    @Operation(summary = "List all invoices")
+    fun getInvoices(): ResponseEntity<List<InvoiceEntity>> =
+        ResponseEntity.ok(invoiceRepository.findAll())
+
+    @PostMapping("/invoices")
+    @Operation(summary = "Generate itemized invoice for repair job")
+    fun createInvoice(@RequestBody req: CreateInvoiceRequest): ResponseEntity<InvoiceEntity> {
+        val repairJob = repairJobRepository.findById(req.repairJobId)
+            .orElseThrow { IllegalArgumentException("Repair job not found") }
+
+        val grandTotal = req.partsTotalCents + req.laborTotalCents + req.taxCents - req.discountCents
+        val dueCents = (grandTotal - req.amountPaidCents).coerceAtLeast(0L)
+        val isPaid = dueCents == 0L
+
+        val invoiceNumber = "INV-2026-" + System.currentTimeMillis().toString().takeLast(5)
+        val invoice = InvoiceEntity(
+            invoiceNumber = invoiceNumber,
+            repairJob = repairJob,
+            customer = repairJob.customer,
+            partsTotalCents = req.partsTotalCents,
+            laborTotalCents = req.laborTotalCents,
+            discountCents = req.discountCents,
+            taxCents = req.taxCents,
+            grandTotalCents = grandTotal,
+            amountPaidCents = req.amountPaidCents,
+            amountDueCents = dueCents,
+            isPaidInFull = isPaid
+        )
+        return ResponseEntity.ok(invoiceRepository.save(invoice))
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffReportController(
     private val repairJobRepository: RepairJobRepository,
     private val invoiceRepository: InvoiceRepository,
