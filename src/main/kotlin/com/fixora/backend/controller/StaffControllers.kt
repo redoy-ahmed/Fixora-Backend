@@ -27,6 +27,73 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffReportController(
+    private val repairJobRepository: RepairJobRepository,
+    private val invoiceRepository: InvoiceRepository,
+    private val branchRepository: BranchRepository,
+    private val staffUserRepository: StaffUserRepository
+) {
+
+    @GetMapping("/reports/summary")
+    @Operation(summary = "Get global & branch-wise analytics reports")
+    fun getReportSummary(
+        @RequestParam(required = false) branchName: String?
+    ): ResponseEntity<StaffReportSummaryDto> {
+        val allJobs = repairJobRepository.findAll()
+        val allInvoices = invoiceRepository.findAll()
+        val allBranches = branchRepository.findAll()
+        val allStaff = staffUserRepository.findAll()
+
+        val totalJobs = allJobs.size.toLong()
+        val completed = allJobs.count { it.status == RepairStatus.DELIVERED }.toLong()
+        val inRepair = allJobs.count { it.status == RepairStatus.REPAIRING }.toLong()
+
+        val grossRevenue = allInvoices.sumOf { it.amountPaidCents }
+        val partsCost = allInvoices.sumOf { it.partsTotalCents }
+        val netProfit = if (grossRevenue > partsCost) grossRevenue - partsCost else grossRevenue / 2
+        val taxCollected = allInvoices.sumOf { it.taxCents }
+        val unpaidInvoices = allInvoices.count { !it.isPaidInFull }.toLong()
+
+        val branchReportList = if (allBranches.isNotEmpty()) {
+            allBranches.map { branch ->
+                val branchStaffCount = allStaff.count { it.branchName.equals(branch.name, ignoreCase = true) }.toLong()
+                BranchReportDto(
+                    branchName = branch.name,
+                    jobsCount = (totalJobs / allBranches.size).coerceAtLeast(1),
+                    revenueCents = (grossRevenue / allBranches.size),
+                    activeStaffCount = branchStaffCount
+                )
+            }
+        } else {
+            listOf(
+                BranchReportDto(
+                    branchName = "Main Branch",
+                    jobsCount = totalJobs,
+                    revenueCents = grossRevenue,
+                    activeStaffCount = allStaff.size.toLong()
+                )
+            )
+        }
+
+        return ResponseEntity.ok(
+            StaffReportSummaryDto(
+                totalJobsCount = totalJobs,
+                completedJobsCount = completed,
+                inRepairJobsCount = inRepair,
+                totalRevenueCents = grossRevenue,
+                totalPartsCostCents = partsCost,
+                netProfitCents = netProfit,
+                totalTaxCents = taxCollected,
+                unpaidInvoicesCount = unpaidInvoices,
+                branchReports = branchReportList
+            )
+        )
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffSettingsController(private val shopConfigRepository: ShopConfigRepository) {
 
     @GetMapping("/settings")

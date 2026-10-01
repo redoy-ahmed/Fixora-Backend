@@ -16,6 +16,26 @@ data class LoginRequest(
 data class RegisterCustomerRequest(val fullName: String, val phone: String, val email: String, val password: String)
 data class AuthTokenResponse(val token: String, val userId: String, val displayName: String, val role: String)
 
+// Report & Analytics DTOs
+data class StaffReportSummaryDto(
+    val totalJobsCount: Long,
+    val completedJobsCount: Long,
+    val inRepairJobsCount: Long,
+    val totalRevenueCents: Long,
+    val totalPartsCostCents: Long,
+    val netProfitCents: Long,
+    val totalTaxCents: Long,
+    val unpaidInvoicesCount: Long,
+    val branchReports: List<BranchReportDto>
+)
+
+data class BranchReportDto(
+    val branchName: String,
+    val jobsCount: Long,
+    val revenueCents: Long,
+    val activeStaffCount: Long
+)
+
 // Shop Settings DTOs
 data class ShopConfigDto(
     val shopName: String,
