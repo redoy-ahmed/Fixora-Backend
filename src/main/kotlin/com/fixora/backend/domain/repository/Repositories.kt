@@ -9,6 +9,9 @@ import java.util.Optional
 import java.util.UUID
 
 @Repository
+interface ShopConfigRepository : JpaRepository<ShopConfigEntity, Int>
+
+@Repository
 interface BranchRepository : JpaRepository<BranchEntity, UUID> {
     fun findByName(name: String): Optional<BranchEntity>
 }

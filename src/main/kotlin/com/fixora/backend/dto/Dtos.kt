@@ -16,6 +16,18 @@ data class LoginRequest(
 data class RegisterCustomerRequest(val fullName: String, val phone: String, val email: String, val password: String)
 data class AuthTokenResponse(val token: String, val userId: String, val displayName: String, val role: String)
 
+// Shop Settings DTOs
+data class ShopConfigDto(
+    val shopName: String,
+    val tagline: String,
+    val primaryPhone: String,
+    val primaryEmail: String,
+    val currencySymbol: String,
+    val taxRatePercent: Double,
+    val defaultWarrantyDays: Int,
+    val receiptFooterText: String
+)
+
 // Branch DTOs
 data class CreateBranchRequest(
     val name: String,

@@ -5,6 +5,21 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
+@Table(name = "shop_config")
+class ShopConfigEntity(
+    @Id var id: Int = 1,
+    @Column(name = "shop_name", nullable = false) var shopName: String = "TechCare Fixora",
+    @Column(nullable = false) var tagline: String = "Professional Electronics Repair",
+    @Column(name = "primary_phone", nullable = false) var primaryPhone: String = "+880 1711 000000",
+    @Column(name = "primary_email", nullable = false) var primaryEmail: String = "support@techcare.com",
+    @Column(name = "currency_symbol", nullable = false) var currencySymbol: String = "$",
+    @Column(name = "tax_rate_percent", nullable = false) var taxRatePercent: Double = 5.0,
+    @Column(name = "default_warranty_days", nullable = false) var defaultWarrantyDays: Int = 90,
+    @Column(name = "receipt_footer_text", nullable = false) var receiptFooterText: String = "Thank you for choosing TechCare Fixora.",
+    @Column(name = "updated_at", nullable = false) var updatedAt: OffsetDateTime = OffsetDateTime.now()
+)
+
+@Entity
 @Table(name = "branches")
 class BranchEntity(
     @Id @GeneratedValue(strategy = GenerationType.AUTO)

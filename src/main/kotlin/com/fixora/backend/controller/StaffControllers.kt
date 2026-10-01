@@ -27,6 +27,61 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffSettingsController(private val shopConfigRepository: ShopConfigRepository) {
+
+    @GetMapping("/settings")
+    @Operation(summary = "Get global shop configuration settings")
+    fun getSettings(): ResponseEntity<ShopConfigDto> {
+        val config = shopConfigRepository.findById(1).orElseGet {
+            shopConfigRepository.save(ShopConfigEntity(id = 1))
+        }
+        return ResponseEntity.ok(
+            ShopConfigDto(
+                shopName = config.shopName,
+                tagline = config.tagline,
+                primaryPhone = config.primaryPhone,
+                primaryEmail = config.primaryEmail,
+                currencySymbol = config.currencySymbol,
+                taxRatePercent = config.taxRatePercent,
+                defaultWarrantyDays = config.defaultWarrantyDays,
+                receiptFooterText = config.receiptFooterText
+            )
+        )
+    }
+
+    @PostMapping("/settings")
+    @Operation(summary = "Save/update global shop configuration settings")
+    fun saveSettings(@RequestBody req: ShopConfigDto): ResponseEntity<ShopConfigDto> {
+        val config = shopConfigRepository.findById(1).orElseGet { ShopConfigEntity(id = 1) }
+        config.shopName = req.shopName
+        config.tagline = req.tagline
+        config.primaryPhone = req.primaryPhone
+        config.primaryEmail = req.primaryEmail
+        config.currencySymbol = req.currencySymbol
+        config.taxRatePercent = req.taxRatePercent
+        config.defaultWarrantyDays = req.defaultWarrantyDays
+        config.receiptFooterText = req.receiptFooterText
+        config.updatedAt = OffsetDateTime.now()
+
+        val saved = shopConfigRepository.save(config)
+        return ResponseEntity.ok(
+            ShopConfigDto(
+                shopName = saved.shopName,
+                tagline = saved.tagline,
+                primaryPhone = saved.primaryPhone,
+                primaryEmail = saved.primaryEmail,
+                currencySymbol = saved.currencySymbol,
+                taxRatePercent = saved.taxRatePercent,
+                defaultWarrantyDays = saved.defaultWarrantyDays,
+                receiptFooterText = saved.receiptFooterText
+            )
+        )
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffUserController(
     private val staffUserRepository: StaffUserRepository,
     private val passwordEncoder: PasswordEncoder
