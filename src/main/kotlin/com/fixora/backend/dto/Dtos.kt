@@ -16,6 +16,16 @@ data class LoginRequest(
 data class RegisterCustomerRequest(val fullName: String, val phone: String, val email: String, val password: String)
 data class AuthTokenResponse(val token: String, val userId: String, val displayName: String, val role: String)
 
+// Notification DTOs
+data class CreateNotificationRequest(
+    val recipientId: UUID,
+    val recipientType: String,
+    val title: String,
+    val message: String,
+    val targetType: String,
+    val targetEntityId: String
+)
+
 // Report & Analytics DTOs
 data class StaffReportSummaryDto(
     val totalJobsCount: Long,

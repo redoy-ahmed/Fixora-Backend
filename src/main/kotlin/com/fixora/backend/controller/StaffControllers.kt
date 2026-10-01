@@ -27,6 +27,30 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffNotificationController(private val notificationRepository: NotificationRepository) {
+    @GetMapping("/notifications")
+    @Operation(summary = "List all notification audit logs")
+    fun getNotifications(): ResponseEntity<List<NotificationEntity>> =
+        ResponseEntity.ok(notificationRepository.findAll())
+
+    @PostMapping("/notifications")
+    @Operation(summary = "Dispatch notification alert")
+    fun sendNotification(@RequestBody req: CreateNotificationRequest): ResponseEntity<NotificationEntity> {
+        val notification = NotificationEntity(
+            recipientId = req.recipientId,
+            recipientType = RecipientType.valueOf(req.recipientType),
+            title = req.title,
+            message = req.message,
+            targetType = NotificationTargetType.valueOf(req.targetType),
+            targetEntityId = req.targetEntityId
+        )
+        return ResponseEntity.ok(notificationRepository.save(notification))
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffDiagnosisController(
     private val estimateRepository: EstimateRepository,
     private val repairJobRepository: RepairJobRepository
