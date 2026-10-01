@@ -27,6 +27,40 @@ class StaffAuthController(private val staffAuthService: StaffAuthService) {
 @RestController
 @RequestMapping("/api/v1/staff")
 @Tag(name = "Staff Operations")
+class StaffDiagnosisController(
+    private val estimateRepository: EstimateRepository,
+    private val repairJobRepository: RepairJobRepository
+) {
+    @GetMapping("/estimates")
+    @Operation(summary = "List all diagnostic estimates")
+    fun getEstimates(): ResponseEntity<List<EstimateEntity>> =
+        ResponseEntity.ok(estimateRepository.findAll())
+
+    @PostMapping("/repairs/{repairJobId}/estimate")
+    @Operation(summary = "Create diagnosis estimate for repair job")
+    fun createEstimate(
+        @PathVariable repairJobId: UUID,
+        @RequestBody req: CreateDiagnosisEstimateRequest
+    ): ResponseEntity<EstimateEntity> {
+        val repairJob = repairJobRepository.findById(repairJobId)
+            .orElseThrow { IllegalArgumentException("Repair job not found") }
+
+        val estimate = EstimateEntity(
+            repairJob = repairJob,
+            faultSummary = req.faultSummary,
+            partsCostCents = req.partsCostCents,
+            laborCostCents = req.laborCostCents,
+            discountCents = req.discountCents,
+            additionalChargesCents = req.additionalChargesCents,
+            status = EstimateStatus.PENDING
+        )
+        return ResponseEntity.ok(estimateRepository.save(estimate))
+    }
+}
+
+@RestController
+@RequestMapping("/api/v1/staff")
+@Tag(name = "Staff Operations")
 class StaffWarrantyController(
     private val warrantyRepository: WarrantyRepository,
     private val warrantyClaimRepository: WarrantyClaimRepository,
