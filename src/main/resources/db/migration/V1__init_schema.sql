@@ -1,15 +1,3 @@
--- 0. Branches
-CREATE TABLE branches (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL UNIQUE,
-    address TEXT NOT NULL,
-    phone VARCHAR(50) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    is_main_branch BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
 -- 1. Staff Users
 CREATE TABLE staff_users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
