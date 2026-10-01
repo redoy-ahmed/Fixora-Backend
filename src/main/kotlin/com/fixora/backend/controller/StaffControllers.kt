@@ -388,6 +388,30 @@ class StaffCustomerController(private val customerRepository: CustomerRepository
         )
         return ResponseEntity.ok(customerRepository.save(customer))
     }
+
+    @PutMapping("/customers/{id}")
+    @Operation(summary = "Update customer profile")
+    fun updateCustomer(
+        @PathVariable id: UUID,
+        @RequestBody req: CreateCustomerRequest
+    ): ResponseEntity<CustomerEntity> {
+        val customer = customerRepository.findById(id)
+            .orElseThrow { IllegalArgumentException("Customer not found") }
+        customer.name = req.name
+        customer.phone = req.phone
+        customer.email = req.email
+        customer.address = req.address
+        customer.notes = req.notes
+        customer.updatedAt = OffsetDateTime.now()
+        return ResponseEntity.ok(customerRepository.save(customer))
+    }
+
+    @DeleteMapping("/customers/{id}")
+    @Operation(summary = "Delete customer profile")
+    fun deleteCustomer(@PathVariable id: UUID): ResponseEntity<Map<String, String>> {
+        customerRepository.deleteById(id)
+        return ResponseEntity.ok(mapOf("status" to "DELETED", "message" to "Customer deleted successfully"))
+    }
 }
 
 @RestController
